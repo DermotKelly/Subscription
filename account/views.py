@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from . forms import CreateUserForm
 from django.http import HttpResponse
 from django.contrib.auth.forms import AuthenticationForm
@@ -15,7 +15,7 @@ def register(request):
         form = CreateUserForm(request.POST)
         if form.is_valid():
             form.save()
-            return HttpResponse('User Registered')
+            return redirect('my-login')
     
     context = {'RegisterForm':form}
 
@@ -25,9 +25,11 @@ def register(request):
 def my_login(request):
 
     form = AuthenticationForm()
+
     if request.method == 'POST':
         
         form = AuthenticationForm(request, data=request.POST)
+
         if form.is_valid():
 
             username = request.POST.get('username') # Username is email
@@ -38,6 +40,12 @@ def my_login(request):
             if user is not None and user.is_writer==True:
                 login(request, user)
 
+                return HttpResponse('Welcome Writer')
+            
+            if user is not None and user.is_writer==False:
+                login(request, user)
+
+                return HttpResponse('Welcome Client')
                 
-        
-        return render (request, 'account/my-login.html')
+    context = {'LoginForm':form}
+    return render (request, 'account/my-login.html',context)
